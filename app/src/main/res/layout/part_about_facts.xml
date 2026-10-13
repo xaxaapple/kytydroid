@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  the three labelled facts on the About screen: what emulator this runs, what it was read against, and
+  what it is under.
+
+  **one file, included by both orientations**, which is what keeps the two body variants to a choice of
+  axis. everything that differs between upright and wide is where this block sits; nothing that differs
+  is inside it.
+
+  **a label column at a fixed width and a value column filling the rest.** sizing both halves to their
+  content would put the three values at three different distances from the edge, which is the one thing
+  a table exists to avoid. the labels are the quiet half and take the accent at small caps, so the eye
+  reads down them and across to whichever line it wants.
+
+  **there is not one image on this screen but the drawing**, and that is the whole design rather than a
+  restriction it is working under: a logo beside a name or an avatar beside a label is a second thing
+  to look at, and three of them turn a page into a list.
+
+  **the mark at the end of a link is not one of those.** it is punctuation - an arrow out of the app
+  means a browser and a chevron means a screen of this one, which is a distinction somebody can act on
+  before pressing rather than after. it is a drawable rather than a character of the text because the
+  characters that would say it are not in the app's own face: the platform substitutes them from
+  elsewhere, and they arrive at a lighter stroke than the word beside them and sitting nearer cap
+  height than its optical centre. the drawables say the same thing at the weight this app chooses, and
+  the style tints them from the attribute the text takes, so the two cannot disagree.
+
+  **the sub-line under a value is what that value is, never what to think about it.** a version, a pair
+  of reasons in the same order as the pair of names above it, and three places to read the terms.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- ============================================================ the emulator -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/AboutLabel"
+            android:text="@string/about_label_emulator" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- **two names on one line and two versions under them, mapping by order.** it is the
+                 shape the references row below already has, and it is here because the alternative -
+                 an entry each, stacked - gives this label four lines where every other label on the
+                 screen has two, and the row that breaks the table's rhythm is the one at the top of
+                 it.
+
+                 **the second emulator is not a footnote.** one runs the game and the other runs *it*:
+                 the whole SharpEmu process is x86-64, and this is what executes it on an arm64 CPU,
+                 so a page naming what this app is built on and omitting it would be missing the half
+                 that makes any of it possible on this hardware. -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/sharpemu"
+                    style="@style/AboutLink"
+                    android:drawableEnd="@drawable/ic_open_link"
+                    android:text="@string/about_sharpemu" />
+
+                <TextView
+                    android:id="@+id/fexcore"
+                    style="@style/AboutLink"
+                    android:layout_marginStart="8dp"
+                    android:drawableEnd="@drawable/ic_open_link"
+                    android:text="@string/about_fexcore" />
+
+            </LinearLayout>
+
+            <!-- both versions on one line, mapping by order onto the two names above.
+
+                 **a dot separates values and a space separates links.** that is the whole rule here:
+                 this line divides its versions with dots, as a version is divided from its own commit,
+                 and the three rows of links put nothing between them but the gap.
+
+                 **one view holding one string, rather than a field each with a separator view between
+                 them.** the dot between the two emulators is meant to be the same mark as the dot
+                 inside a version, and the only way to be certain of that is for it to be the same
+                 character of the same string in the same font at the same colour. matched instead by
+                 setting three attributes on a view of its own, it comes out subtly wrong, and the
+                 first two attempts here differed in alpha alone. it is also less to keep in step: the
+                 activity composes this with the same format string the app's own version line uses,
+                 so the two lines cannot drift apart.
+
+                 **what it costs is that the line's two levels look alike.** the dot inside a version
+                 divides it from its own commit and the dot between the two divides one emulator from
+                 the other, so which version belongs to which name is carried by order rather than
+                 shown. the alternative is whitespace at the width of the gap between the two names,
+                 which keeps the grouping visible and reads as a missing character; this is the trade
+                 the other way, taken deliberately.
+
+                 the version and commit are of the build **a launch would actually run**, which is not
+                 always the one this APK ships, and FEX's half is its own release naming. both are set
+                 in the app's own face, like every other version label in the app and for the reason
+                 the app's own version line states. -->
+            <TextView
+                android:id="@+id/versions"
+                style="@style/AboutSub" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ============================================================ the references -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/AboutLabel"
+            android:text="@string/about_label_references" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/eden"
+                    style="@style/AboutLink"
+                    android:drawableEnd="@drawable/ic_open_link"
+                    android:text="@string/about_eden" />
+
+                <TextView
+                    android:id="@+id/gamenative"
+                    style="@style/AboutLink"
+                    android:layout_marginStart="8dp"
+                    android:drawableEnd="@drawable/ic_open_link"
+                    android:text="@string/about_gamenative" />
+
+            </LinearLayout>
+
+            <!-- the two reasons, in the order of the two names above them. -->
+            <TextView
+                style="@style/AboutSub"
+                android:text="@string/about_references_sub" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ============================================================ the license -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/AboutLabel"
+            android:text="@string/about_label_license" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- **the only value on the screen that is not a link**, because the terms are a fact
+                 rather than a destination. the three places to act on it are the line beneath. -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingVertical="5dp"
+                android:text="@string/about_license"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurface" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- the first of the row, and the only one pulled back by its own padding, so the
+                     line starts on the same vertical as the value above it. -->
+                <!-- the smaller of the two marks, because this line's text is about a third smaller
+                     than the value lines above it and one size leaves the mark taller than the
+                     capitals it follows. -->
+                <TextView
+                    android:id="@+id/source"
+                    style="@style/AboutSubLink"
+                    android:layout_marginStart="-6dp"
+                    android:drawableEnd="@drawable/ic_open_link_small"
+                    android:text="@string/about_source" />
+
+                <TextView
+                    android:id="@+id/read_license"
+                    style="@style/AboutSubLink"
+                    android:layout_marginStart="4dp"
+                    android:drawableEnd="@drawable/ic_go"
+                    android:text="@string/about_read_license" />
+
+                <TextView
+                    android:id="@+id/third_party"
+                    style="@style/AboutSubLink"
+                    android:layout_marginStart="4dp"
+                    android:drawableEnd="@drawable/ic_go"
+                    android:text="@string/about_third_party" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

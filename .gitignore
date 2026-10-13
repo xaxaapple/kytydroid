@@ -1,0 +1,41 @@
+# all local output: the native build, the APK, packaged builds, run logs.
+/build/
+
+# toolchains fetched by scripts/fetch-toolchain.py. the declaration is toolchain.json, which IS
+# committed; this is where it gets materialised. same relationship as package.json to node_modules.
+/toolchain/
+
+# the staged x86-64 guest libraries. these are Debian glibc, libstdc++ and openssl binaries and
+# are LGPL; scripts/fetch-guest-libs.py fetches them, and they are not redistributed here.
+/guest-libs/x86_64/
+/guest-libs/bin/
+
+# a throwaway debug signing key. scripts/build-apk.py generates one on demand, so there is no reason
+# to publish one.
+/app/debug.keystore
+
+# the key a published APK is signed with, and the file naming its passwords. neither is generated and
+# neither is recoverable: android refuses an update signed by a different key, so losing these means
+# nobody who installed a release can ever take another one. keep a copy somewhere that is not this
+# machine. scripts/build-apk.py refuses the release identity without them and says how to make one.
+/app/release.keystore
+/app/release-signing.properties
+
+# gradle's own project-local cache and daemon state. there is no way to redirect it from inside the
+# build the way build/ is redirected, so it is ignored where it lands.
+/.gradle/
+# written by scripts/build-apk.py from whatever the toolchain resolver found. it holds an absolute
+# SDK path, which is true on exactly one machine.
+/local.properties
+
+# python's compiled bytecode, written beside the scripts whenever one imports the shared package.
+__pycache__/
+*.pyc
+
+# editors and platform junk
+.vs/
+.idea/
+*.user
+*.swp
+Thumbs.db
+.DS_Store

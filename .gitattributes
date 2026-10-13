@@ -1,0 +1,12 @@
+# every file in this tree is LF, and that is load-bearing rather than tidy: host/regression.sh and
+# scripts/device/*.sh are pushed to an android device and run by /system/bin/sh, where a CR is a
+# syntax error rather than whitespace. git for windows ships with core.autocrlf = true in its system
+# config, so without this a clone on windows would rewrite them on checkout and the failure would
+# land on the device.
+* text=auto eol=lf
+
+# the exception, and it is gradle's own template rule rather than ours. gradlew.bat is run by
+# cmd.exe, which is not dependable with an LF-only batch file, and the line above would convert it
+# on checkout - so a fresh clone on windows would get a wrapper that may not run. gradlew itself is
+# a shell script and stays LF with everything else.
+*.bat text eol=crlf

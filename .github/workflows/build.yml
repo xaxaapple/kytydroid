@@ -1,0 +1,95 @@
+name: build
+# the whole pipeline on GitHub's runners; nothing is built locally.
+#   1. payload: KytyPS5 for linux-x86-64 (debian 12 container) -> kyty-build.zip
+#   2. apk:     host layer + app, with that Kyty build bundled inside -> sharpdroid-kyty.apk
+# run it from Actions -> build -> Run workflow (works from a phone browser too).
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "also publish a GitHub release with the files"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  payload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kyty third-party sources (exact pins)
+        run: python3 scripts/fetch-sources.py --only kyty
+      - name: Build the Kyty payload in debian:12
+        run: python3 scripts/build-kyty.py --package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kyty-build
+          path: build/builds/*.zip
+          if-no-files-found: error
+
+  apk:
+    needs: payload
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      NDK_VERSION: "29.0.14206865"
+      SHARPDROID_SDK: ${{ github.workspace }}/android-sdk
+      SHARPDROID_NDK: ${{ github.workspace }}/android-sdk/ndk/29.0.14206865
+      SHARPDROID_CMAKE: ${{ github.workspace }}/android-sdk/cmake/3.22.1/bin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: FEX and libadrenotools (exact pins)
+        run: python3 scripts/fetch-sources.py --only sharpdroid
+      - name: Android SDK pieces the pipeline pins
+        run: |
+          set -e
+          mkdir -p "$SHARPDROID_SDK"
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKM" ] || SDKM="$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | head -1)"
+          yes | "$SDKM" --sdk_root="$SHARPDROID_SDK" --licenses > /dev/null || true
+          "$SDKM" --sdk_root="$SHARPDROID_SDK" --install \
+            "ndk;$NDK_VERSION" "build-tools;35.0.0" "platforms;android-35" "cmake;3.22.1" "platform-tools"
+      - uses: actions/download-artifact@v4
+        with:
+          name: kyty-build
+          path: kyty-zip
+      - name: Unpack the Kyty build
+        run: |
+          set -e
+          mkdir -p build/kyty-build
+          unzip -q kyty-zip/*.zip -d build/kyty-build
+          test -f build/kyty-build/meta.json
+      - name: Build host layer and APK (Kyty bundled)
+        env:
+          SHARPDROID_JDK: ${{ env.JAVA_HOME }}
+        run: |
+          chmod +x gradlew
+          python3 scripts/build.py --sharpemu build/kyty-build
+      - name: Collect
+        run: |
+          mkdir -p dist
+          find app/build/outputs -name '*.apk' -exec cp {} dist/sharpdroid-kyty.apk \; || true
+          cp kyty-zip/*.zip dist/ 
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sharpdroid-kyty
+          path: dist/*
+          if-no-files-found: error
+      - name: Release
+        if: ${{ github.event.inputs.publish == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "kyty-${{ github.run_number }}" dist/* --title "sharpdroid-kyty ${{ github.run_number }}" --notes "built by GitHub Actions"

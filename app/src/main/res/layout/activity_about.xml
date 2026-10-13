@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  the About screen: what this is, what it runs, what it was read against, and what it is under.
+
+  **the frame and nothing else.** the composition is `part_about_body.xml`, which has a `-land`
+  variant, because the one thing that changes with the shape of the screen is whether the drawing sits
+  above the text or beside it.
+
+  **the toolbar is laid over the content rather than above it**, and that is what lets the drawing
+  reach full height. stacked in a column, the content begins at the toolbar's bottom edge and every
+  container between the two clips there, so the topmost few pixels of the drawing were sliced flat -
+  and the drawing's own file has ink in its second row, so there is nothing to spare. here the scroll
+  view fills the window and is padded down by the toolbar's height instead: the content still starts
+  below the toolbar, and `clipToPadding` being off lets what overflows draw up into that band.
+
+  **the toolbar carries no background of its own, which is the other half of it.** a surface behind it
+  would hide exactly what this arrangement exists to show. the cost is that anything scrolled up would
+  pass behind the title rather than under a solid band, and it is a cost worth naming rather than a
+  free lunch - this page is written to fit without scrolling on the screens it is built for, and the
+  scroll view below is insurance for a shorter one.
+
+  **the scroll view sets `fillViewport`**, which is what lets the composition centre in the space
+  rather than hang from the top of it, and a screen too short for the composition still scrolls.
+
+  **the whole composition is lifted 8dp, and it is a translation for the reason the drawing's own lift
+  is one.** it reads a little high on purpose: the toolbar carries no background and no band of its
+  own, so a page centred by arithmetic sits low to an eye that takes the title's line as the top of the
+  page rather than the panel's edge.
+
+  **padding cannot do it here, and that is a measurement rather than a preference.** side by side the
+  page is very nearly the height of the space under the toolbar - some 15px of slack on a landscape
+  handheld - so leaving more room below than above recentres it by whatever slack is left and then
+  pushes it into scrolling instead of moving it further. 16dp of extra bottom padding bought 5px of the
+  8dp asked for. a translation moves what is drawn and nothing that is measured, so the lift is exactly
+  the number written on it, whatever the panel.
+
+  **the bottom padding is what pays for the translation on a screen short enough to scroll.** there the
+  page hangs from the top rather than centring, and the last 8dp of it would sit past the end of the
+  scroll; the 16dp below absorbs that with room to spare.
+
+  **the attribute is on the body's own root and not on the `include` below**, because an include
+  carries only `id`, `visibility` and `layout_*` across to the root it names and drops everything else
+  in silence - a translation written here compiles, draws, and moves nothing.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingTop="?attr/actionBarSize"
+        android:paddingBottom="16dp"
+        android:scrollbarStyle="outsideOverlay">
+
+        <include
+            android:id="@+id/body"
+            layout="@layout/part_about_body"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- last, so it draws over the content it is laid on. -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_gravity="top"
+        app:navigationIcon="@drawable/ic_back" />
+
+</FrameLayout>

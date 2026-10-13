@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  two bars, for the button that pauses a run.
+
+  Material Symbols' own filled pause at its 960 viewport, which is the family ic_play is drawn from:
+  the two buttons swap one for the other on the panel, and a filled arrow beside an outlined pair of
+  bars would read as two different sets.
+
+  it carries no colour of its own and is tinted where it is used, like the other icon on that panel.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M560,760L560,200L720,200L720,760L560,760ZM240,760L240,200L400,200L400,760L240,760Z" />
+
+</vector>

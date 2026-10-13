@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  the game list the app opens on, the settings scene and the two manager screens behind it, and the
+  surface a guest renders into.
+
+  the launcher icon opens a list of what is on the device, staged and granted alike, and a tap runs
+  one. a run is left through the panel the back button opens over it; there is no per-game menu.
+
+  four things AGP owns are in app/build.gradle.kts rather than here: the application id (namespace
+  and applicationId are separate there, and only the second one moves), the SDK levels,
+  extractNativeLibs - which is packaging { jniLibs { useLegacyPackaging } } - and debuggable, which
+  each build type decides for itself and which is a lint error when hardcoded here. that last one is
+  the whole difference between the two: the identity a stranger installs is not debuggable, and the
+  development ones are. the label is a string resource so a renamed build can set it without this
+  file being rewritten.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      **an opt-in, and never the way in.** a game library is reached by asking the user for one
+      folder, and everything under it is answered through a content provider - which needs no
+      permission at all and is what the app does with this switched off. holding this changes one
+      thing and only for a game inside a granted folder: the directory becomes an ordinary path, so
+      the guest opens its files with ordinary syscalls and the interception layer is never
+      registered. that is the same code path a game staged by the tooling has always taken.
+
+      declaring it is not holding it. it is granted in the platform's own settings screen and
+      nowhere else, and the app reads it back at every launch rather than remembering it.
+
+      the lint suppression is the point rather than an evasion: the check exists to ask whether an
+      app really needs this instead of scoped storage, and the answer here is that it does not,
+      which is why the feature is a branch and not a requirement.
+    -->
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+    <!--
+      controller rumble. a normal permission, so it is granted at install and there is no screen to
+      send anybody to and nothing to read back at launch.
+
+      it is worth knowing what its absence looks like, because it is not what one would guess:
+      hasVibrator() and hasAmplitudeControl() both answer truthfully without it, so everything reports
+      ready and the vibrate call alone throws a SecurityException naming the permission. a rumble path
+      can therefore look completely healthy right up to the first buzz that does not happen.
+    -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!--
+      the foreground service a game holds while it is up, on android 13 and later - see GuestService.
+      both are normal permissions, granted at install.
+
+      **POST_NOTIFICATIONS is not declared, and that is the point rather than an omission.** android
+      runs no foreground service without a notification, and from 13 an app that does not declare this
+      can never have one shown, nor can the person switch one on. the service is then visible only as
+      the app's line among the active apps in quick settings, which android keeps for every foreground
+      service. declaring it would make the notification one setting away.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
+        android:label="@string/app_name"
+        android:hardwareAccelerated="true"
+        android:theme="@style/Theme.SharpDroid">
+
+        <!-- the game list, and what the launcher icon opens. -->
+        <activity
+            android:name=".GameListActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          the global settings scene, and one screen behind it for whichever section was tapped.
+
+          neither is exported: they are reached from the game list's cog and from nowhere else. the
+          section screen takes the section's name as an extra rather than being four activities, so
+          an intent naming one this build does not have finishes rather than drawing an empty
+          section that would look like a section with no settings in it.
+        -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SettingsSectionActivity"
+            android:exported="false" />
+
+        <!--
+          one game's settings, opened by holding its cover on the list.
+
+          the sections behind it are the two above: the same scene and the same section screen, told
+          which game they are answering for, so an option added to the app's own Emulation, Graphics
+          or Controls is offered per game the day it is written rather than the day somebody copies
+          it across.
+
+          not exported, for the reason the section screen is not: what is set here decides what a
+          launch runs.
+        -->
+        <activity
+            android:name=".GameSettingsActivity"
+            android:exported="false" />
+
+        <!--
+          the SharpEmu build manager, behind the build row in Emulation, and the GPU driver manager
+          behind the driver row in Graphics. neither is exported, for the same reason the two above
+          are not: each is reached from a settings row, and an intent that opened one directly would
+          be a way to import and select an artefact a launch then runs without the screen that says
+          so having been opened.
+        -->
+        <activity
+            android:name=".BuildsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DriversActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".FoldersActivity"
+            android:exported="false" />
+
+        <!--
+          the User data screen, opened by its own card on the settings scene rather than by a row.
+          not exported for a sharper version of the reason above: every button on it either hands a
+          person's save data out or takes theirs away.
+        -->
+        <activity
+            android:name=".UserDataActivity"
+            android:exported="false" />
+
+        <!--
+          one game's half of that, opened by the fourth card on a game's own scene. not exported for
+          the same reason, and for one more: what it acts on is named by an extra, so an intent from
+          outside would be choosing which title's save data to hand out.
+        -->
+        <activity
+            android:name=".GameUserDataActivity"
+            android:exported="false" />
+
+        <!--
+          the About screen, opened by its own card on the settings scene, and the two screens behind
+          it: the list of license documents this APK redistributes its guest libraries under, and the
+          reader that shows one.
+
+          none is exported, which is the rule every screen behind the cog follows. there is nothing
+          here worth reaching by intent - the texts are assets of this APK, so anything that could
+          send the intent could read them directly.
+        -->
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LicensesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LicenseTextActivity"
+            android:exported="false" />
+
+        <!--
+          **a process of its own, and it is the guest's exit that asks for it.** a guest calling
+          exit_group ends the process it is in - that is what the syscall means, and the host layer
+          answers it with _exit because the other guest threads are inside translated code and
+          cannot be unwound. in one process that is the app dying with the game, leaving nowhere to
+          go back to. in two it is one process ending, and the task resumes the game list under it.
+
+          **the process runs exactly one guest and never a second.** it is started for a launch and
+          it is gone when that launch ends, however it ends - so a run inherits no guest mappings,
+          no JIT state and no loaded payload from the run before it, and two launches of the same
+          intent are the same launch twice. that is also what lets the host layer itself be chosen
+          per run: a library is loaded once per process, so a process per run is the only place a
+          different one could be loaded.
+
+          the leading colon makes it private to this app: com.mircowuffwuff.sharpdroid:guest, its own
+          address space under the same uid. the uid is what matters for everything the guest reaches
+          - the app's own directories are the same directories, and a folder grant is held by the
+          package rather than by the process that asked for it, so a game inside one is reachable
+          from here exactly as it is from the list.
+
+          landscape and locked. the guest decides the presentation size once, at swapchain
+          creation, and a rotation would change the surface underneath it - which is a real
+          problem for a later piece of work and not one worth inventing an answer to here.
+
+          **exported with no intent filter, and both halves of that are deliberate.** it is no
+          longer the launcher activity, so nothing resolves it implicitly; it stays exported
+          because `am start -n <application id>/com.mircowuffwuff.sharpdroid.MainActivity` is how
+          every script in this repository launches a guest, and how a run gets its driver, its
+          build and its diagnostic flags named per launch. that path has to keep working
+          independently of the list, so that a game which boots by intent and not by tap says
+          which of the two is at fault.
+
+          it keeps the framework fullscreen theme rather than the application's Material one: its
+          window is a surface a guest renders into, and the system bars shrinking it would change
+          the extent the guest presents at.
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:process=":guest"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|density|smallestScreenSize|uiMode" />
+
+        <!--
+          what keeps a game in memory while the app is left, and it runs in :guest because that is the
+          process it protects. started by MainActivity when a game starts, on android 13 and later
+          only, and ended with the process.
+
+          specialUse, because none of the named types is this: a game paused in memory is not media
+          playing, not a sync and not a connected device. the property is the sentence android asks
+          for to say what it is instead.
+        -->
+        <service
+            android:name=".GuestService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":guest">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps an emulated game, paused, in memory while the user is in another app." />
+        </service>
+    </application>
+</manifest>

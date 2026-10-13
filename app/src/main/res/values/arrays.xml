@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  the choices behind the two dropdowns that have one.
+
+  each array is parallel to a values array in Settings.kt rather than to one here: what is stored is
+  what the payload parses, and what is shown is what a person should have to read. keeping the
+  stored side in code is deliberate - a translation of this file must never be able to change what
+  is written to the store.
+-->
+<resources>
+
+    <!-- Settings.THEMES, in order. SharpEmu is the desktop build's own violet on its near-black
+         surfaces and is the default; Light and Dark are monochrome, white and black respectively,
+         with no colour in either. Material You takes the device's wallpaper colours and Custom takes
+         one the user picks, and both are the same generator - so both are dropped from the list where
+         dynamic colour does not exist. -->
+    <string-array name="theme_entries">
+        <item>SharpEmu</item>
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Material You</item>
+        <item>Custom</item>
+    </string-array>
+
+    <!-- Settings.RENDER_SCALES, in order: 1.0, 0.75, 0.5, 0.25. the four the desktop UI offers. -->
+    <string-array name="render_scale_entries">
+        <item>100% (native)</item>
+        <item>75%</item>
+        <item>50%</item>
+        <item>25%</item>
+    </string-array>
+
+    <!-- FexPreset.ALL, in order, most faithful first. the names are FEX's own ladder as other
+         frontends label it, so that a setting means the same thing to someone arriving from one.
+         this ladder is shorter than theirs: the rungs a preset covers are the ones that trade
+         faithfulness for speed, and the block lookup is a group of rows beside them instead. see
+         FexPreset for what a rung above Performance would have been bundling. -->
+    <string-array name="fex_preset_entries">
+        <item>Stability</item>
+        <item>Compatibility</item>
+        <item>Intermediate</item>
+        <item>Performance</item>
+    </string-array>
+
+
+</resources>

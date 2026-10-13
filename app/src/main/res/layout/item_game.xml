@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  one game, as a card holding its cover.
+
+  **the manager card, with artwork where the text block is.** the fill, the outline, the radius and
+  the margins are all that file's - see item_manager_card.xml - because this screen had none of the
+  scheme on it: a bare tile on the base surface uses one surface tone and one text colour, so the only
+  colour present was the cover art's, and five covers in five unrelated palettes is what read as
+  incohesive. a container tone behind each one is what separates them and what makes this screen
+  visibly the same app as the ones behind it.
+
+  **the tile is square by ratio and not by a height.** a cell is as wide as the grid's column, which
+  changes with the orientation and the screen, so a fixed height would be square on one device and a
+  rectangle on the next. that is the whole reason there is a ConstraintLayout inside the card.
+
+  **the artwork's radius is smaller than the card's**, which is what nesting a shape asks for: two
+  equal radii read as one shape drawn twice. it cannot be concentric at this inset - the padding is
+  wider than the radius it would step down from - so it is a smaller echo of the card's rather than a
+  calculation.
+
+  **the title id is not here.** the name is what a person picks a game by; the id is what a log line
+  and a script name it by, and both of those say it themselves. it is still parsed and still carried -
+  see Game - and the per-game screen is where it belongs on screen.
+
+  **the name is one line and scrolls when it does not fit**, the manager cards' answer to the same
+  problem - see ManagerCard. one line is what keeps every card in the grid exactly as tall as every
+  other without anything having to reserve a blank line or stretch to its row, and a name too long to
+  read is worth more scrolling than ellipsized, since the end of a title is often the half that
+  distinguishes two of them.
+
+  **bodyLarge rather than titleMedium, which is the same size a weight lighter.** a card of this size
+  under a piece of cover art wants a label and not a heading, and the pair of roles differ by exactly
+  that - both 16sp, one medium and one regular - so this is a role and not an override of one.
+
+  it is aligned to the start rather than centred, so it begins where the artwork above it does.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="6dp"
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/icon"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_game_placeholder"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.SharpDroid.Tile" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icon">
+
+            <!-- **the managers' badge, in front of the name rather than above it.** the pill, the
+                 word and both colours are the ones a staged driver and a staged build wear - see
+                 item_manager_card.xml and the Badge style - so one provenance reads the same
+                 wherever it is drawn. the colours are attributes here and set in code there because
+                 this badge has one value to say and those have three.
+
+                 **it is the only provenance with a badge, and it is hidden rather than blank on the
+                 rest.** where a manager card labels every item, a game reached through a granted
+                 folder is how a person gets to their own library - so a badge on every card would be
+                 a pill on every cover to say "ordinary". this marks the exception.
+
+                 **it sits between the two answers vertical alignment offers, because both are
+                 visibly wrong here.** the row's own default is a baseline, and the pill hangs low on
+                 it - a badge is a block and not a word, so aligning the letters inside it aligns the
+                 wrong thing. centring the boxes instead rides high, since the 16sp name reserves
+                 descent under itself that the 11sp badge does not. so the row is centred and the
+                 badge is nudged down by half the distance between the two.
+
+                 **the nudge is a top margin and it moves the badge by all of itself.** a centred
+                 child is placed by its box and then offset by its margins, rather than centred with
+                 them, so 1dp here is 1dp on screen and not half of one. the bottom margin the style
+                 carries is cleared for the same reason it exists - it separates a badge from the
+                 line under it, and there is nothing under this one - which is also what leaves this
+                 one free to mean something. -->
+            <TextView
+                android:id="@+id/badge"
+                style="@style/Badge"
+                android:layout_marginBottom="0dp"
+                android:layout_marginTop="1dp"
+                android:backgroundTint="?attr/colorSurfaceContainerHighest"
+                android:text="@string/build_badge_staged"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:singleLine="true"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Dreaming Sarah" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
