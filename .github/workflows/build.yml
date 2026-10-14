@@ -108,9 +108,11 @@ jobs:
           python3 scripts/build.py --sharpemu build/kyty-build
       - name: Collect
         run: |
+          set -e
           mkdir -p dist
-          find app/build/outputs -name '*.apk' -exec cp {} dist/sharpdroid-kyty.apk \; || true
-          cp kyty-zip/*.zip dist/ 
+          APK="$(ls build/apk/*.apk | head -1)"
+          cp "$APK" dist/sharpdroid-kyty.apk
+          cp kyty-zip/*.zip dist/
           ls -la dist
       - uses: actions/upload-artifact@v4
         with:
